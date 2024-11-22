@@ -28,6 +28,8 @@ make
 ## Run
 Just run with:
 ```
+sudo ./build/a_mon -l 0-7 -n 4 -- -c sample-conf/conf-polito.ini
+
 sudo ./build/a_mon -c COREMASK [-b PCI_ADDR] -- -c <ini_file>
 ```
 * `COREMASK`: The core where to bind the program. **It needs consecutive cores starting from Core0**

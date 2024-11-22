@@ -26,6 +26,9 @@ PC_FILE := $(shell $(PKGCONF) --path libdpdk 2>/dev/null)
 CFLAGS += -O3 $(shell $(PKGCONF) --cflags libdpdk)
 CFLAGS += -mcmodel=medium
 CFLAGS += -DSUPPORT_IPV6
+# Debug
+# CFLAGS += $(shell $(PKGCONF) --cflags libdpdk)
+# CFLAGS += -O0 -g
 
 LDFLAGS_SHARED = $(shell $(PKGCONF) --libs libdpdk)
 LDFLAGS_STATIC = $(shell $(PKGCONF) --static --libs libdpdk)
