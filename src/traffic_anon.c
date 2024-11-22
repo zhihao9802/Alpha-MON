@@ -1,6 +1,32 @@
 #include "traffic_anon.h"
-#include <semaphore.h>
 
+time_stat time_pkt[MAX_CORES];
+
+/* Configuration */
+int mempool_elem_nb;
+
+out_interface_sett *config;
+out_interface_sett out_interface [MAX_INTERFACES];
+in_interface_sett in_interface [MAX_INTERFACES];
+static int in_interface_cnt = 0;
+
+/* Global Vars */
+static int nb_sys_ports;
+static int nb_sys_cores;
+char ini_file [MAX_STR];
+static struct rte_mempool * pktmbuf_pool, *  pktmbuf_pool2;
+static uint64_t pkts_core [MAX_CORES] = {0};
+static int used_ports[MAX_INTERFACES];
+
+/* RSS symmetrical 40 Byte seed, according to
+"Scalable TCP Session Monitoring with Symmetric Receive-side Scaling"
+(Shinae Woo, KyoungSoo Park from KAIST)  */
+static uint8_t rss_seed [] = {      0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+                                    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+                                    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+                                    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
+                                    0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a
+};
 
 sem_t print_mutex;
 
@@ -63,7 +89,7 @@ int main(int argc, char **argv)
 
 
     /* ... and then loop in consumer */
-    rte_eal_mp_remote_launch(main_loop, NULL, CALL_MASTER);
+    rte_eal_mp_remote_launch(main_loop, NULL, CALL_MAIN);
 
     return 0;
 }
@@ -241,7 +267,7 @@ static int main_loop(__attribute__((unused)) void * arg){
                                i,    port_address);
                 printf("     Rx: Rate: %8.3f Mbps %0.3f Mpps ",
                                     rate_mbs, rate_mps) ;
-                printf("Rx: %8ld Missed: %8ld Err: %8ld Tot: %8ld Perc Drop/Err: %6.3f%%",
+                printf("Rx: %8d Missed: %8d Err: %8d Tot: %8d Perc Drop/Err: %6.3f%%",
                          packets,      missed,   errors,      tot,             perc_rx) ;
 
                 /* Notify in case of losses */
@@ -262,7 +288,7 @@ static int main_loop(__attribute__((unused)) void * arg){
 
                 printf("     Tx: Rate: %8.3f Mbps %0.3f Mpps ",
                                    orate_mbs, orate_mps);
-                printf("Tx: %8ld                  Err: %8ld Tot: %8ld      Perc Err: %6.3f%%\n",
+                printf("Tx: %8d                  Err: %8d Tot: %8d      Perc Err: %6.3f%%\n",
                         opackets,                   oerrors,     otot,               perc_tx);
 
                 all_stats_old[i] = stat;    
@@ -355,8 +381,8 @@ static void init_port(int i) {
                 dev_info.driver_name, dev_info.max_rx_queues, dev_info.max_tx_queues);
 
         /* Add, if supported, DEV_TX_OFFLOAD_MBUF_FAST_FREE */
-        if (dev_info.tx_offload_capa & DEV_TX_OFFLOAD_MBUF_FAST_FREE)
-            port_conf.txmode.offloads |= DEV_TX_OFFLOAD_MBUF_FAST_FREE;
+        if (dev_info.tx_offload_capa & RTE_ETH_TX_OFFLOAD_MBUF_FAST_FREE)
+            port_conf.txmode.offloads |= RTE_ETH_TX_OFFLOAD_MBUF_FAST_FREE;
 
         /* Decide the seed to give the port, by default use the classical symmetrical*/
         port_conf.rx_adv_conf.rss_conf.rss_key = rss_seed;
@@ -403,7 +429,7 @@ static void init_port(int i) {
         /* Print link status */
         rte_eth_link_get_nowait(i, &link);
         if (link.link_status) printf("ANON:     Link Up - speed %u Mbps - %s\n",
-                                     (unsigned)link.link_speed,(link.link_duplex == ETH_LINK_FULL_DUPLEX)?
+                                     (unsigned)link.link_speed,(link.link_duplex == RTE_ETH_LINK_FULL_DUPLEX)?
                                      ("full-duplex") : ("half-duplex\n"));
         else            printf("ANON:     Port %d Link Down\n",i);
 

@@ -1,4 +1,3 @@
-#include "rijndael.h"
 #include "traffic_anon.h"
 
 void init_rijndael_OP(rijndael * self){

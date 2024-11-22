@@ -8,11 +8,6 @@
 #ifndef lru_h
 #define lru_h
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <rte_malloc.h>
-#include "proto_mng.h"
-
 // A utility function to create a new Queue Node. The queue Node
 // NOT TO BE CALLED
 struct lru* newlru(int, time_t);

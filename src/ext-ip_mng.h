@@ -9,11 +9,6 @@
 #ifndef ext_ip_mng_h
 #define ext_ip_mng_h
 
-#include <stdio.h>
-#include <string.h>    //strlen
-#include <stdlib.h>    //malloc
-#include <unistd.h>    //getpid
-
 #include <rte_hash.h>
 #include <rte_jhash.h>
 #include <rte_mbuf.h>
@@ -26,7 +21,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "proto_mng.h"
 
 int external_ip (struct rte_mbuf *, struct timespec, int, struct table_flow *,hash_struct *, flow, int, int);
 uint32_t addressV4_gen();

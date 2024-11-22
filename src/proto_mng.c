@@ -1,8 +1,9 @@
-#include <rte_mbuf.h>
 #include <ldns/ldns.h>
 
 #include <ldns/wire2host.h>
-#include "proto_mng.h"
+#include "traffic_anon.h"
+
+hash_struct flow_db;
 
 void proto_init(int nb_sys_cores)
 {
@@ -33,10 +34,10 @@ void table_init(hash_struct * data)
 // For Protocol use:
 // 0 = TCP
 // 1 = UDP
-void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, struct rte_mbuf * packet, int core, struct timespec tp, int id, out_interface_sett interface_setting, crypto_ip *self, int ip_origin)
+void multiplexer_proto(struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, struct rte_mbuf * packet, int core, struct timespec tp, int id, out_interface_sett interface_setting, crypto_ip *self, int ip_origin)
 {
-    struct tcp_hdr * tcp_header;
-    struct udp_hdr * udp_header;
+    struct rte_tcp_hdr * tcp_header;
+    struct  rte_udp_hdr * udp_header;
     flow newPacket;
     uint16_t src_port;
     uint16_t dst_port;
@@ -50,7 +51,7 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
         	switch (ipv4_header->next_proto_id)
 		{
                 	case TCP:
-                        	tcp_header = rte_pktmbuf_mtod_offset(packet, struct tcp_hdr *, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr) );
+                        	tcp_header = rte_pktmbuf_mtod_offset(packet, struct rte_tcp_hdr *, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr) );
                             packet->l4_len = sizeof(*tcp_header);
                             newPacket.ipv = 4;
                             newPacket.ipv4_src = ipv4_header->src_addr;
@@ -97,7 +98,7 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                         }
                                     }
                                 /*else
-                                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));*/
+                                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));*/
                             }
                             else if(detected_proto == 80)
                             {
@@ -116,10 +117,10 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                 
                             }
                             else if(newPacket.in_port != SSH && newPacket.in_port != HTTPS  && newPacket.out_port != SSH && newPacket.out_port != HTTPS)
-                                remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct tcp_hdr));
+                                remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct rte_tcp_hdr));
                             break;
                 	case UDP:
-                            udp_header = rte_pktmbuf_mtod_offset(packet, struct udp_hdr *, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr) );
+                            udp_header = rte_pktmbuf_mtod_offset(packet, struct  rte_udp_hdr *, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr) );
                         	newPacket.ipv = 4;
                             newPacket.ipv4_src = ipv4_header->src_addr;
                             newPacket.ipv4_dst = ipv4_header->dst_addr;
@@ -135,7 +136,7 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                     flusso = reference_flow(&newPacket);
                                     if(flusso->toAnon==-1 || flusso->toAnon==1)
                                     {
-                                        external_ip(packet, tp, ip_origin, &flusso, &flow_db, newPacket, interface_setting.alpha, interface_setting.delta);
+                                        external_ip(packet, tp, ip_origin, flusso, &flow_db, newPacket, interface_setting.alpha, interface_setting.delta);
                                         if(flag!=0)
                                             flusso->toAnon==1;
                                         else
@@ -151,14 +152,14 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                     dnsEntry(packet, 1, ipv4_header, NULL, newPacket, &flow_db, interface_setting.alpha, interface_setting.delta, self, id, core);
                                 }
                                 else
-                                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+                                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
                             }
                             else if(newPacket.in_port != SSH && newPacket.in_port != HTTPS  && newPacket.out_port != SSH && newPacket.out_port != HTTPS)
-                                remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+                                remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
                         	break;
                 	default:
                             /* Since the protocol is not defined, it is assumed not secure, so is deleted the IP payload*/
-                            remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr));
+                            remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr));
                             break;
          	}
 	}
@@ -167,7 +168,7 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
 		switch (ipv6_header->proto)
                 {
                         /*case TCP:
-                                tcp_header = rte_pktmbuf_mtod_offset(packet, struct tcp_hdr *, sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr) );
+                                tcp_header = rte_pktmbuf_mtod_offset(packet, struct rte_tcp_hdr *, sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr) );
                                 packet->l4_len = sizeof(*tcp_header);
                                 newPacket.ipv = 6;
                                 for( int temp=0; temp < 16; temp++)
@@ -187,10 +188,10 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                     //TODO
                                 }
                                 else if(newPacket.in_port != SSH && newPacket.in_port != HTTPS  && newPacket.out_port != SSH && newPacket.out_port != HTTPS)
-                                    remove_payload(packet, sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+sizeof(struct tcp_hdr));
+                                    remove_payload(packet, sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct rte_tcp_hdr));
                                 break;
                         case UDP:
-                                udp_header = rte_pktmbuf_mtod_offset(packet, struct udp_hdr *, sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr) );
+                                udp_header = rte_pktmbuf_mtod_offset(packet, struct  rte_udp_hdr *, sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr) );
                                 newPacket.ipv = 6;
                                 for( int temp=0; temp < 16; temp++) 
                                 {
@@ -212,16 +213,16 @@ void multiplexer_proto(struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_hea
                                     }
                                 }
                                 else if(newPacket.in_port != SSH && newPacket.in_port != HTTPS  && newPacket.out_port != SSH && newPacket.out_port != HTTPS)
-                                    remove_payload(packet, sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+                                    remove_payload(packet, sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
                                 break;
                         default:
-                                remove_payload(packet, sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr));
+                                remove_payload(packet, sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr));
                                 break;*/
                 }
 	}
 }
 
-void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core)
+void dnsEntry (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core)
 {
     int stop, offset;
     dns_header *dns;
@@ -242,7 +243,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
     dns = dns_header_extractor(packet, protocol, ipv4_header, ipv6_header);
     if(dns==NULL)
     {
-        remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+        remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
         return;
     }
     
@@ -254,7 +255,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
         len = offset_extractor(protocol, ipv4_header, ipv6_header);
         if(len>=packet->pkt_len)
         {
-            remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
             return;
         }
         buff = rte_pktmbuf_mtod_offset(packet, char *, offset_extractor(protocol, ipv4_header, ipv6_header));
@@ -335,7 +336,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
         {
             if(DEBUG==1)
             printf("Reply condition: %d\n", (dns->rcode));
-            remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
             return;
         }
         if(DEBUG==1)
@@ -343,7 +344,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
         int n_ans = ntohs(dns->ans_count);
         if(n_ans<=0)
         {
-            remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
             return;
         }
         int n_aut = ntohs(dns->auth_count);
@@ -351,7 +352,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
         len = offset_extractor(protocol, ipv4_header, ipv6_header);
         if(len>=packet->pkt_len)
         {
-            remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr));
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr));
             return;
         }
         buffstart = buff = rte_pktmbuf_mtod_offset(packet, char *, offset_extractor(protocol, ipv4_header, ipv6_header));
@@ -486,7 +487,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
                 // TO BE IMPLEMENTED
                 else if(ntohs(answers[i].resource->type) == 28)
                 {
-                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr)+12);
+                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr)+12);
                     return;
                     buff+=ntohs(answers[i].resource->data_len);
                 }
@@ -496,7 +497,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
                     //TEST
                     //ReadName(buff,buffstart,&stop);
                     //buff += stop;
-                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr)+12);
+                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr)+12);
                     return;
                 }
             }
@@ -583,7 +584,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
                 {
                     if(DEBUG==1)
                     printf("ANS:    Skip ipv6\n");
-                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr)+12);
+                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr)+12);
                     return;
                     buff+=ntohs(addit[i].resource->data_len);
                 }
@@ -593,7 +594,7 @@ void dnsEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
                     //TEST
                     //ReadName(buff,buffstart,&stop);
                     //buff+=stop;
-                    remove_payload(packet, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr)+12);
+                    remove_payload(packet, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr)+12);
                     return;
                 }
             }
@@ -624,7 +625,7 @@ void remove_payload(struct rte_mbuf * packet, size_t offset)
 //int table_add(hash_struct * data, int hash, flow flow_recv)
 int table_add(hash_struct *flow_db, flow flow_recv, char * name, int k_anon, int k_delta)
 {
-    uint64_t name_hash;
+    int name_hash;
     int user_hash;
     struct names *curr_name = NULL;
     struct names *curr = NULL;
@@ -796,7 +797,7 @@ int table_add(hash_struct *flow_db, flow flow_recv, char * name, int k_anon, int
         if(flow_db->bitMap[name_hash].number==0)
         {
             if(DEBUG==1)
-                printf("bitmap = %d\n", flow_db->bitMap[name_hash]);
+                printf("bitmap = %d\n", flow_db->bitMap[name_hash].number);
             flow_db->table[name_hash].full=1;
             strcpy(flow_db->table[name_hash].name, name);
 
@@ -853,7 +854,7 @@ int table_add(hash_struct *flow_db, flow flow_recv, char * name, int k_anon, int
         }
     }
     if(DEBUG==1)
-        printf(" Bitmap @%d = %d\n", name_hash, flow_db->bitMap[name_hash]);
+        printf(" Bitmap @%d = %d\n", name_hash, flow_db->bitMap[name_hash].number);
     
     //sem_post(&flow_db->bitMap->permission);
      pthread_mutex_unlock(&flow_db->bitMap[name_hash].permission);

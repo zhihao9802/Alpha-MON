@@ -1,10 +1,6 @@
 #ifndef IP_UTILS_H
 #define IP_UTILS_H
 
-#include <stdio.h>
-#include <arpa/inet.h>
-#include "process_packet.h"
-
 #define MAX_SUBNETS 256
 #define BUF_SIZE 160//80
 

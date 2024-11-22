@@ -2,10 +2,9 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
-#include "crypto_ip.h"
+#include "traffic_anon.h"
 #include "base64.h"
 
-//#include "rijndael.h"
 
 /* Redefine the initial hash size to a large value, to avoid/reduce the automatic rehashing */
 
@@ -37,6 +36,9 @@ struct key6_hashT {
 //#ifdef SUPPORT_IPV6
 //struct key6_hashT *address6_hash = NULL;
 //#endif
+
+/* Reentrant data structure [core][interface] */
+rijndael rijndael_OP[100][MAX_INTERFACES];
 
 void add_address(crypto_ip * self, in_addr_t src, in_addr_t cpan_addr) {
     key_hashT *s,*tmp_entry;

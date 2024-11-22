@@ -9,17 +9,8 @@
 #ifndef http_mng_h
 #define http_mng_h
 
-#include <stdio.h>
-#include <string.h>    //strlen
-#include <stdlib.h>    //malloc
-#include <unistd.h>    //getpid
-
-#include "proto_mng.h"
-
-char * http_header_extractor (struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *);
-size_t offset_extractor_http (int, struct ipv4_hdr *, struct ipv6_hdr *, uint8_t);
-
-
-
+char * http_header_extractor (struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
+size_t offset_extractor_http (int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *, uint8_t);
+int httpEntry (struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *, uint8_t, flow, hash_struct *, int, int, crypto_ip *, int, int);
 
 #endif /* http_mng_h */

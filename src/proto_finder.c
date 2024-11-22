@@ -6,12 +6,12 @@
 //  Copyright © 2020 Thomas Favale. All rights reserved.
 //
 
-#include "proto_finder.h"
+#include "traffic_anon.h"
 
 //Protocol return code
 //DNS = 53
 
-int proto_detector(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, uint16_t inport, uint16_t outport)
+int proto_detector(struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, uint16_t inport, uint16_t outport)
 {
     if(isDns(packet, protocol, ipv4_header, ipv6_header, inport, outport)==0)
     {
@@ -32,7 +32,7 @@ int proto_detector(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv
         return 0;
 }
 
-int isDns(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, uint16_t inport, uint16_t outport)
+int isDns(struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, uint16_t inport, uint16_t outport)
 {
     dns_header *dns;
     dns = dns_header_extractor(packet, protocol, ipv4_header, ipv6_header);
@@ -60,7 +60,7 @@ int isDns(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header,
         return 1;
 }
 
-int isTls(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header)
+int isTls(struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header)
 {
     if(ipv4_header!=NULL)
     {
@@ -106,7 +106,7 @@ int isTls(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header,
     return 0;
 }
 
-int isHttp(struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header)
+int isHttp(struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header)
 {
     char *pkt;
     pkt = http_header_extractor(packet, protocol, ipv4_header, ipv6_header);

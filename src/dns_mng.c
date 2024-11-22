@@ -5,10 +5,10 @@
 //  Created by Thomas Favale on 08/11/2019.
 //
 
-#include "dns_mng.h"
+#include "traffic_anon.h"
 
 
-dns_header * dns_header_extractor (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header)
+dns_header * dns_header_extractor (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header)
 {
     //dns_header *dns;
     size_t len;
@@ -48,21 +48,21 @@ dns_header * dns_header_extractor (struct rte_mbuf * packet, int protocol, struc
     //return dns;
 }
 
-size_t offset_extractor (int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header)
+size_t offset_extractor (int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header)
 {
     if(ipv4_header!=NULL)
     {
         if(protocol == 0)
-            return  sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct tcp_hdr);
+            return  sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct rte_tcp_hdr);
         else if(protocol == 1)
-            return sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr);
+            return sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr);
     }
     else
     {
         if(protocol == 0)
-            return  sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+sizeof(struct tcp_hdr);
+            return  sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct rte_tcp_hdr);
         else if(protocol == 1)
-            return sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr);
+            return sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr);
     }
 }
 

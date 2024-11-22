@@ -15,38 +15,8 @@
 #include<sys/socket.h>    //you know what this is for
 #include<arpa/inet.h> //inet_addr , inet_ntoa , ntohs etc
 #include<netinet/in.h>
-#include <unistd.h>    //getpid
-#include <rte_mbuf.h>
-#include <rte_common.h>
-#include <rte_log.h>
-#include <rte_memory.h>
-#include <rte_memcpy.h>
-#include <rte_memzone.h>
-#include <rte_tailq.h>
-#include <rte_errno.h>
-#include <rte_eal.h>
-#include <rte_per_lcore.h>
-#include <rte_launch.h>
-#include <rte_lcore.h>
-#include <rte_branch_prediction.h>
-#include <rte_interrupts.h>
-#include <rte_pci.h>
-#include <rte_debug.h>
-#include <rte_ether.h>
-#include <rte_ip.h>
-#include <rte_ethdev.h>
-#include <rte_ring.h>
-#include <rte_log.h>
-#include <rte_mempool.h>
-#include <rte_mbuf.h>
-#include <rte_string_fns.h>
-#include <rte_cycles.h>
-#include <rte_atomic.h>
-#include <rte_version.h>
-#include <rte_tcp.h>
-#include <rte_udp.h>
 
-#include "proto_mng.h"
+#include "traffic_anon.h"
 
 
 //TLS version numbers
@@ -95,8 +65,8 @@ typedef struct tls_header_v0
     char val[12];
 } tls_header_v0;
 
-tls_header_v2 * tls_header_extractor (struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *);
-size_t offset_extractor_tls (int, struct ipv4_hdr *, struct ipv6_hdr *, uint8_t);
-//void tlsHelloEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, uint8_t offset, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core);
+tls_header_v2 * tls_header_extractor (struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
+size_t offset_extractor_tls (int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *, uint8_t);
+int tlsHelloEntry (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, uint8_t offset, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core);
 
 #endif /* tls_mng_h */

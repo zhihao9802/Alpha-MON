@@ -6,7 +6,9 @@
 //  Copyright © 2020 Thomas Favale. All rights reserved.
 //
 
-#include "flow_mng.h"
+#include "traffic_anon.h"
+
+flow_mng flow_struct;
 
 void flow_table_init()
 {

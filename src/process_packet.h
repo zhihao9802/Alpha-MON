@@ -11,26 +11,19 @@
 #include <rte_udp.h>
 #include <rte_lcore.h>
 #include <arpa/inet.h>
-//#include "traffic_anon.h"
-#include "crypto_ip.h"
-#include "ip_utils.h"
-#include "proto_mng.h"
+
 
 /* Constants */
 #define MAX_SUBNETS 256
 //#define MAX_CORES 100
 
 /* IP data structures */
-struct in_addr net_list [MAX_SUBNETS];
-struct in6_addr net_listv6 [MAX_SUBNETS];
-int net_mask [MAX_SUBNETS];
-int net_maskv6 [MAX_SUBNETS];
-int tot_nets;
-int tot_netsv6;
-
-
-/* Reentrant data structure [core][interface] */ 
-crypto_ip crypto_data[MAX_CORES][MAX_INTERFACES];
+extern struct in_addr net_list [MAX_SUBNETS];
+extern struct in6_addr net_listv6 [MAX_SUBNETS];
+extern int net_mask [MAX_SUBNETS];
+extern int net_maskv6 [MAX_SUBNETS];
+extern int tot_nets;
+extern int tot_netsv6;
 
 
 /* Functions */
@@ -42,10 +35,10 @@ void process_packet_init(int);
 
 /* Utility Function to print MAC addresses */
 static inline void
-print_ether_addr(const char *what, struct ether_addr *eth_addr)
+print_ether_addr(const char *what, struct rte_ether_addr *eth_addr)
 {
-    char buf[ETHER_ADDR_FMT_SIZE];
-    ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, eth_addr);
+    char buf[RTE_ETHER_ADDR_FMT_SIZE];
+    rte_ether_format_addr(buf, RTE_ETHER_ADDR_FMT_SIZE, eth_addr);
     printf("%s%s", what, buf);
 }
 

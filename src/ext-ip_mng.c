@@ -6,7 +6,8 @@
 //  Copyright © 2020 Thomas Favale. All rights reserved.
 //
 
-#include "ext-ip_mng.h"
+#include "traffic_anon.h"
+
 int external_ip (struct rte_mbuf * packet, struct timespec tp, int ip_origin, struct table_flow * flusso, hash_struct *flowdb, flow newPacket, int k_anon, int k_delta)
 {
     int len;
@@ -16,21 +17,21 @@ int external_ip (struct rte_mbuf * packet, struct timespec tp, int ip_origin, st
     struct in_addr dst_addr;
     struct in6_addr src_addr_6;
     struct in6_addr dst_addr_6;
-    struct ether_hdr *eth_hdr;
-    struct ipv4_hdr * ipv4_header;
-    struct ipv6_hdr * ipv6_header;
+    struct rte_ether_hdr *eth_hdr;
+    struct rte_ipv4_hdr * ipv4_header;
+    struct rte_ipv6_hdr * ipv6_header;
     char name[NAME_DNS];
     int flag = 0;
     int ret;
     
     
-    eth_hdr = rte_pktmbuf_mtod(packet, struct ether_hdr *);
+    eth_hdr = rte_pktmbuf_mtod(packet, struct rte_ether_hdr *);
     ether_type = htons(eth_hdr->ether_type);
 
     /* Is IPv4 */
     if (ether_type == 0x0800)
     {
-        ipv4_header = rte_pktmbuf_mtod_offset(packet, struct ipv4_hdr *, sizeof(struct ether_hdr) );
+        ipv4_header = rte_pktmbuf_mtod_offset(packet, struct rte_ipv4_hdr *, sizeof(struct rte_ether_hdr) );
 
         src_addr.s_addr = ipv4_header->src_addr;
         dst_addr.s_addr = ipv4_header->dst_addr;
@@ -101,7 +102,7 @@ int external_ip (struct rte_mbuf * packet, struct timespec tp, int ip_origin, st
     else if(ether_type == 0x86DD)
     {
 
-        ipv6_header = rte_pktmbuf_mtod_offset(packet, struct ipv6_hdr *, sizeof(struct ether_hdr) );
+        ipv6_header = rte_pktmbuf_mtod_offset(packet, struct rte_ipv6_hdr *, sizeof(struct rte_ether_hdr) );
 
         rte_memcpy(&src_addr_6.s6_addr, ipv6_header->src_addr, sizeof(src_addr_6.s6_addr));
         rte_memcpy(&dst_addr_6.s6_addr, ipv6_header->dst_addr, sizeof(dst_addr_6.s6_addr));
@@ -128,7 +129,7 @@ int external_ip (struct rte_mbuf * packet, struct timespec tp, int ip_origin, st
                 if(ret < k_anon)
                 {
                     flag++;
-                    addressV6_gen(&src_addr_6.s6_addr);
+                    addressV6_gen(&src_addr_6);
                     rte_memcpy(ipv6_header->src_addr, &src_addr_6.s6_addr, sizeof(src_addr_6.s6_addr));
                     rte_memcpy(flusso->ipv6_anon, &src_addr_6.s6_addr, sizeof(flusso->ipv6_anon));
                 }
@@ -151,7 +152,7 @@ int external_ip (struct rte_mbuf * packet, struct timespec tp, int ip_origin, st
                 if(ret < k_anon)
                 {
                     flag++;
-                    addressV6_gen(&dst_addr_6.s6_addr);
+                    addressV6_gen(&dst_addr_6);
                     rte_memcpy(ipv6_header->dst_addr, &dst_addr_6.s6_addr, sizeof(dst_addr_6.s6_addr));
                     rte_memcpy(flusso->ipv6_anon, &dst_addr_6.s6_addr, sizeof(flusso->ipv6_anon));
                 }

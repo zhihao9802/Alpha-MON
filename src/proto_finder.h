@@ -30,8 +30,8 @@
 
 
 
-int proto_detector(struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *, uint16_t , uint16_t);
-int isDns(struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *, uint16_t , uint16_t);
-int isTls(struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *);
-int isHttp(struct rte_mbuf *, int, struct ipv4_hdr *, struct ipv6_hdr *);
+int proto_detector(struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *, uint16_t , uint16_t);
+int isDns(struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *, uint16_t , uint16_t);
+int isTls(struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
+int isHttp(struct rte_mbuf *, int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
 #endif /* proto_finder_h */

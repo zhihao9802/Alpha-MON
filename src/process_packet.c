@@ -1,8 +1,13 @@
 #include "traffic_anon.h"
-#include "process_packet.h"
-//#include "traffic_anon.h"
 
-//#include <semaphore.h>
+/* Reentrant data structure [core][interface] */ 
+crypto_ip crypto_data[MAX_CORES][MAX_INTERFACES];
+struct in_addr net_list [MAX_SUBNETS];
+struct in6_addr net_listv6 [MAX_SUBNETS];
+int net_mask [MAX_SUBNETS];
+int net_maskv6 [MAX_SUBNETS];
+int tot_nets;
+int tot_netsv6;
 
 //sem_t mutex;
 
@@ -57,10 +62,10 @@ void process_packet(struct rte_mbuf * packet, out_interface_sett interface_setti
 void process_packet_eth (struct rte_mbuf * packet, out_interface_sett interface_setting, struct timespec tp)
 {
     int len;
-    struct ether_hdr *eth_hdr;
+    struct rte_ether_hdr *eth_hdr;
 
     len = rte_pktmbuf_data_len(packet); 
-    eth_hdr = rte_pktmbuf_mtod(packet, struct ether_hdr *);
+    eth_hdr = rte_pktmbuf_mtod(packet, struct rte_ether_hdr *);
 
     packet->l2_len = sizeof(*eth_hdr);
 
@@ -68,9 +73,9 @@ void process_packet_eth (struct rte_mbuf * packet, out_interface_sett interface_
     {
         len = rte_pktmbuf_data_len(packet);
         printf("ANON:    Len: %d\n", len);
-        print_ether_addr("ANON:    eth src: ", &eth_hdr->s_addr);
+        print_ether_addr("ANON:    eth src: ", &eth_hdr->src_addr);
         printf("\n");
-        print_ether_addr("ANON:    eth dst: ", &eth_hdr->d_addr);
+        print_ether_addr("ANON:    eth dst: ", &eth_hdr->dst_addr);
         printf("\n");
     } 
 
@@ -79,14 +84,14 @@ void process_packet_eth (struct rte_mbuf * packet, out_interface_sett interface_
 	//uint8_t *bytes = uint8_t[ETHER_ADDR_LEN];
 	//bytes = (uint8_t) tp.tv_sec;
 
-        eth_hdr->s_addr = eth_hdr->d_addr = (struct ether_addr ) {(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec};
+        eth_hdr->src_addr = eth_hdr->dst_addr = (struct rte_ether_addr ) {(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec,(uint8_t) tp.tv_sec};
         if ( VERBOSE > 0)
             printf("ANON:    MAC addresses timestamped\n");
     }
     else
     if (interface_setting.anon_mac_enabled == 1)
     {
-        eth_hdr->s_addr = eth_hdr->d_addr = (struct ether_addr ) {'\0','\0','\0','\0','\0','\0'};
+        eth_hdr->src_addr = eth_hdr->dst_addr = (struct rte_ether_addr ) {'\0','\0','\0','\0','\0','\0'};
         if ( VERBOSE > 0)
             printf("ANON:    MAC addresses removed\n");
     }
@@ -102,9 +107,9 @@ void process_packet_ip (struct rte_mbuf * packet, out_interface_sett interface_s
     struct in_addr dst_addr;
     struct in6_addr src_addr_6;
     struct in6_addr dst_addr_6;
-    struct ether_hdr *eth_hdr;
-    struct ipv4_hdr * ipv4_header;
-    struct ipv6_hdr * ipv6_header;
+    struct rte_ether_hdr *eth_hdr;
+    struct rte_ipv4_hdr * ipv4_header;
+    struct rte_ipv6_hdr * ipv6_header;
     //ip origin work as flag src-dst
     //00 -> int-int
     //11 -> ext-ext
@@ -113,13 +118,13 @@ void process_packet_ip (struct rte_mbuf * packet, out_interface_sett interface_s
     int ip_origin = 0;
 
     len = rte_pktmbuf_data_len(packet);
-    eth_hdr = rte_pktmbuf_mtod(packet, struct ether_hdr *);
+    eth_hdr = rte_pktmbuf_mtod(packet, struct rte_ether_hdr *);
     ether_type = htons(eth_hdr->ether_type);
 
     /* Is IPv4 */
     if (ether_type == 0x0800)
     {
-        ipv4_header = rte_pktmbuf_mtod_offset(packet, struct ipv4_hdr *, sizeof(struct ether_hdr) );
+        ipv4_header = rte_pktmbuf_mtod_offset(packet, struct rte_ipv4_hdr *, sizeof(struct rte_ether_hdr) );
         packet->l3_len = sizeof(*ipv4_header);
 
         src_addr.s_addr = ipv4_header->src_addr;
@@ -169,7 +174,7 @@ void process_packet_ip (struct rte_mbuf * packet, out_interface_sett interface_s
     /* Is IPv6 */
     else if(ether_type == 0x86DD){
 
-        ipv6_header = rte_pktmbuf_mtod_offset(packet, struct ipv6_hdr *, sizeof(struct ether_hdr) );
+        ipv6_header = rte_pktmbuf_mtod_offset(packet, struct rte_ipv6_hdr *, sizeof(struct rte_ether_hdr) );
 
 	packet->l3_len = sizeof(*ipv6_header);
 

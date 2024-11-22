@@ -6,13 +6,13 @@
 //  Copyright © 2020 Thomas Favale. All rights reserved.
 //
 
-#include "http_mng.h"
+#include "traffic_anon.h"
 
-char * http_header_extractor (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header)
+char * http_header_extractor (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header)
 {
     size_t len;
-    struct tcp_hdr *tcp_header;
-    tcp_header = rte_pktmbuf_mtod_offset(packet, struct tcp_hdr *, sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr) );
+    struct rte_tcp_hdr *tcp_header;
+    tcp_header = rte_pktmbuf_mtod_offset(packet, struct rte_tcp_hdr *, sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr) );
     
     len = offset_extractor_http (protocol, ipv4_header, ipv6_header, tcp_header->data_off);
     if (len == 0)
@@ -21,7 +21,7 @@ char * http_header_extractor (struct rte_mbuf * packet, int protocol, struct ipv
         return rte_pktmbuf_mtod_offset(packet, char *, len );
 }
 
-size_t offset_extractor_http (int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, uint8_t offset)
+size_t offset_extractor_http (int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, uint8_t offset)
 {
     offset=(offset>>4)*4;//offset counts options too
     if (offset>60)
@@ -29,20 +29,20 @@ size_t offset_extractor_http (int protocol, struct ipv4_hdr * ipv4_header, struc
     if(ipv4_header!=NULL)
     {
         if(protocol == 0)
-            return sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+offset;
+            return sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+offset;
         else if(protocol == 1)
-            return sizeof(struct ipv4_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr);
+            return sizeof(struct rte_ipv4_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr);
     }
     else
     {
         if(protocol == 0)
-            return sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+offset;
+            return sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+offset;
         else if(protocol == 1)
-            return sizeof(struct ipv6_hdr)+sizeof(struct ether_hdr)+sizeof(struct udp_hdr);
+            return sizeof(struct rte_ipv6_hdr)+sizeof(struct rte_ether_hdr)+sizeof(struct  rte_udp_hdr);
     }
 }
 
-int httpEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_header, struct ipv6_hdr * ipv6_header, uint8_t offset, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core)
+int httpEntry (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, uint8_t offset, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *self, int id, int core)
 {
     int flag = 0;
     int i = 0;
@@ -56,7 +56,7 @@ int httpEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
     name[0]='\0';
     
     if(DEBUG==1)
-        printf("In httpEntry\n", ret);
+        printf("In httpEntry %d\n", ret);
     pkt = http_header_extractor(packet, protocol, ipv4_header, ipv6_header);
     len  = offset_extractor_http(protocol, ipv4_header, ipv6_header, offset);
     //len = ptr - pkt;
@@ -121,7 +121,7 @@ int httpEntry (struct rte_mbuf * packet, int protocol, struct ipv4_hdr * ipv4_he
         return flag;
     name[i] = '\0';
     if(strlen(name)==0)
-        return;
+        return flag;
     if(DEBUG==1)
         printf("%s\n", name);
     

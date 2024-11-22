@@ -84,12 +84,12 @@ typedef unsigned char uint8_t;
 #endif
 
 /* initial number of buckets */
-#ifndef HASH_INITIAL_NUM_BUCKETS
-#define HASH_INITIAL_NUM_BUCKETS 32      /* initial number of buckets        */
-#endif
-#ifndef HASH_INITIAL_NUM_BUCKETS_LOG2
-#define HASH_INITIAL_NUM_BUCKETS_LOG2 5  /* lg2 of initial number of buckets */
-#endif
+// #ifndef HASH_INITIAL_NUM_BUCKETS
+// #define HASH_INITIAL_NUM_BUCKETS 32      /* initial number of buckets        */
+// #endif
+// #ifndef HASH_INITIAL_NUM_BUCKETS_LOG2
+// #define HASH_INITIAL_NUM_BUCKETS_LOG2 5  /* lg2 of initial number of buckets */
+// #endif
 #ifndef HASH_BKT_CAPACITY_THRESH
 #define HASH_BKT_CAPACITY_THRESH 10      /* expand when bucket count reaches */
 #endif

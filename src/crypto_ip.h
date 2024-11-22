@@ -4,9 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include "rijndael.h"
-#include "traffic_anon.h"
-#include "rijndael.h"
+#include "uthash.h" /* Include the generic hash table */
 
 #define MAX_CRYPTIO_CACHE_SIZE 130000
 #define CRYPTO_IPV6_MASK_0 0xffffffff
@@ -28,8 +26,6 @@
 
 /* Use the Bernstein hash function */
 #define HASH_FUNCTION HASH_BER
-
-#include "uthash.h" /* Include the generic hash table */
 
 #define KEY_SIZE 32
 
@@ -69,9 +65,6 @@ typedef struct crypto_ip
         uint32_t *enc_cache;
         uint32_t fullcache[2][2];
 }crypto_ip;
-
-/* Reentrant data structure [core][interface] */
-rijndael rijndael_OP[100][MAX_INTERFACES];
 
 void initialize_crypto(crypto_ip *, char *value, int, int );
 void      encrypt_init(crypto_ip *, char *, int, int, int );

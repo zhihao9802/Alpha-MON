@@ -5,7 +5,7 @@
 //  Created by Thomas Favale on 05/11/2019.
 //
 
-#include "lru.h"
+#include "traffic_anon.h"
 
 struct lru* newlru(int client_hash, time_t timestamp)
 {

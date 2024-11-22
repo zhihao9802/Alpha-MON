@@ -9,45 +9,8 @@
 #define dns_mng_h
 //#include "proto_mng.h"
 //Header Files
-#include<stdio.h> //printf
-#include<string.h>    //strlen
-#include<stdlib.h>    //malloc
-#include<sys/socket.h>    //you know what this is for
-#include<arpa/inet.h> //inet_addr , inet_ntoa , ntohs etc
-#include<netinet/in.h>
-#include <unistd.h>    //getpid
-#include <rte_mbuf.h>
-#include <rte_common.h>
-#include <rte_log.h>
-#include <rte_memory.h>
-#include <rte_memcpy.h>
-#include <rte_memzone.h>
-#include <rte_tailq.h>
-#include <rte_errno.h>
-#include <rte_eal.h>
-#include <rte_per_lcore.h>
-#include <rte_launch.h>
-#include <rte_lcore.h>
-#include <rte_branch_prediction.h>
-#include <rte_interrupts.h>
-#include <rte_pci.h>
-#include <rte_debug.h>
-#include <rte_ether.h>
-#include <rte_ip.h>
-#include <rte_ethdev.h>
-#include <rte_ring.h>
-#include <rte_log.h>
-#include <rte_mempool.h>
-#include <rte_mbuf.h>
-#include <rte_string_fns.h>
-#include <rte_cycles.h>
-#include <rte_atomic.h>
-#include <rte_version.h>
-#include <rte_tcp.h>
-#include <rte_udp.h>
 
 #include <ldns/ldns.h>
-#include "hash_calculator.h"
 
 //Types of DNS resource records :)
  
@@ -120,8 +83,8 @@ typedef struct query
 } query;
 
 //Functions
-dns_header * dns_header_extractor (struct rte_mbuf * , int , struct ipv4_hdr *, struct ipv6_hdr *);
-size_t offset_extractor (int, struct ipv4_hdr *, struct ipv6_hdr *);
+dns_header * dns_header_extractor (struct rte_mbuf * , int , struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
+size_t offset_extractor (int, struct rte_ipv4_hdr *, struct rte_ipv6_hdr *);
 /* u_char* void*/ int  ReadName(unsigned char* ,unsigned char* ,int* );
 
 

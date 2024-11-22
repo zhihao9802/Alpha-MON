@@ -2,10 +2,6 @@
 #define _RIJNDAEL_H_
 #define _RIJNDAEL_CPP_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define _MAX_KEY_COLUMNS (256/32)
 #define _MAX_ROUNDS      14
 #define MAX_IV_SIZE      16
@@ -25,24 +21,24 @@ typedef unsigned short UINT16;
 #define RIJNDAEL_BAD_DIRECTION -6
 #define RIJNDAEL_CORRUPTED_DATA -7
 
-typedef enum Mode_e Mode;
-typedef enum Direction_e Direction;
-typedef enum KeyLength_e KeyLength;
-typedef enum State_e State;
+typedef enum { Encrypt , Decrypt } Mode;
+typedef enum { ECB , CBC , CFB1 } Direction;
+typedef enum { Key16Bytes , Key24Bytes , Key32Bytes } KeyLength;
+typedef enum { Valid , Invalid } State;
 
-//enum Direction_e { Encrypt , Decrypt };
-//enum Mode_e { ECB , CBC , CFB1 };
-//enum KeyLength_e { Key16Bytes , Key24Bytes , Key32Bytes };
-//enum State_e { Valid , Invalid };
+// enum Direction_e { Encrypt , Decrypt };
+// enum Mode_e { ECB , CBC , CFB1 };
+// enum KeyLength_e { Key16Bytes , Key24Bytes , Key32Bytes };
+// enum State_e { Valid , Invalid };
 
 //typedef struct rijndael rijndael;
 
 typedef struct rijndael
 {
-	enum Direction_e { Encrypt , Decrypt };
-        enum Mode_e { ECB , CBC , CFB1 };
-        enum KeyLength_e { Key16Bytes , Key24Bytes , Key32Bytes };
-        enum State_e { Valid , Invalid };
+	// enum Direction_e { Encrypt , Decrypt };
+	// enum Mode_e { ECB , CBC , CFB1 };
+	// enum KeyLength_e { Key16Bytes , Key24Bytes , Key32Bytes };
+	// enum State_e { Valid , Invalid };
 
 	State     m_state;
 	Mode      m_mode;

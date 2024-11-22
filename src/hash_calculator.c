@@ -5,7 +5,7 @@
 //  Created by Thomas Favale on 05/11/2019.
 //
 
-#include "hash_calculator.h"
+#include "traffic_anon.h"
 uint64_t Uint128Low64(const __uint128_t x) { return (uint64_t)x; }
 uint64_t Uint128High64(const __uint128_t x) { return (x >> 64); }
 
