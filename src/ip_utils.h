@@ -4,8 +4,10 @@
 #define MAX_SUBNETS 256
 #define BUF_SIZE 160//80
 
-int internal_ip (struct in_addr adx);
-int internal_ipv6 (struct in6_addr adx);
+int anon_ip_check (struct in_addr adx);
+int anon_ip_checkv6 (struct in6_addr adx);
+int no_anon_ip_check (struct in_addr adx);
+int no_anon_ip_checkv6 (struct in6_addr adx);
 int match_ipv6_net(struct in6_addr adx, struct in6_addr *internal_list, int *mask_list, int list_size);
 
 int ParseNetFile (  FILE *fp,

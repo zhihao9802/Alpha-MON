@@ -136,6 +136,7 @@ static int main_loop(__attribute__((unused)) void *arg)
             printf("CHECK:          anon_ip_key_mode -> %s\n", out_interface[port_cnt].anon_ip_key_mode);
             printf("CHECK:          anon_ip_key -> %s\n", out_interface[port_cnt].anon_ip_key);
             printf("CHECK:          anon_subnet_file -> %s\n", out_interface[port_cnt].anon_subnet_file);
+            printf("CHECK:          no_anon_subnet_file -> %s\n", out_interface[port_cnt].no_anon_subnet_file);
             printf("CHECK:          engine -> %d\n", out_interface[port_cnt].engine);
             printf("CHECK:              external_ip -> %d\n", out_interface[port_cnt].anon_ext_ip);
             printf("CHECK:              dns -> %d\n", out_interface[port_cnt].dns);
@@ -584,6 +585,11 @@ static int parse_ini(void *user, const char *section, const char *name,
         {
             printf("ANON:     %s: %s\n", name, value);
             strcpy(config[ret].anon_subnet_file, value);
+        }
+        else if (strcmp(name, "no_anon_subnet_file") == 0)
+        {
+            printf("ANON:     %s: %s\n", name, value);
+            strcpy(config[ret].no_anon_subnet_file, value);
         }
         /* Protocols */
         else if (strcmp(name, "engine") == 0)

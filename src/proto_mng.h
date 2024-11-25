@@ -20,6 +20,7 @@ extern hash_struct flow_db;
 
 /* Functions for protocols */
 void proto_init(int nb_sys_cores);
+void l4_payload_remover(struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, struct rte_mbuf * packet, int core, struct timespec tp, int id, out_interface_sett interface_setting, crypto_ip *self, int ip_origin);
 void multiplexer_proto(struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, struct rte_mbuf * packet, int core, struct timespec tp, int id, out_interface_sett, crypto_ip *, int);
 void dnsEntry (struct rte_mbuf * packet, int protocol, struct rte_ipv4_hdr * ipv4_header, struct rte_ipv6_hdr * ipv6_header, flow newPacket, hash_struct *flow_db, int k_anon, int k_delta, crypto_ip *, int, int);
 void remove_dnsquery_name (char * buff);

@@ -10,6 +10,7 @@ typedef struct out_interface_sett
   char anon_ip_key[MAX_STR];
   int anon_ip_rotation_delay;
   char anon_subnet_file[MAX_STR];
+  char no_anon_subnet_file[MAX_STR];
   int engine;
   int anon_ext_ip;
   int dns;

@@ -4,6 +4,7 @@
 /* Protocol Type */
 #define TCP             0x06
 #define UDP    	        0x11
+#define ICMP            0x01
 
 /* Protocol Port */
 #define FTP_DATA	20

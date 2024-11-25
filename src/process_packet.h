@@ -18,12 +18,20 @@
 //#define MAX_CORES 100
 
 /* IP data structures */
-extern struct in_addr net_list [MAX_SUBNETS];
-extern struct in6_addr net_listv6 [MAX_SUBNETS];
-extern int net_mask [MAX_SUBNETS];
-extern int net_maskv6 [MAX_SUBNETS];
-extern int tot_nets;
-extern int tot_netsv6;
+extern struct in_addr anon_net_list [MAX_SUBNETS];
+extern struct in6_addr anon_net_listv6 [MAX_SUBNETS];
+extern int anon_net_mask [MAX_SUBNETS];
+extern int anon_net_maskv6 [MAX_SUBNETS];
+extern int tot_anon_nets;
+extern int tot_anon_netsv6;
+
+extern struct in_addr no_anon_net_list [MAX_SUBNETS];
+extern struct in6_addr no_anon_net_listv6 [MAX_SUBNETS];
+extern int no_anon_net_mask [MAX_SUBNETS];
+extern int no_anon_net_maskv6 [MAX_SUBNETS];
+extern int tot_no_anon_nets;
+extern int tot_no_anon_netsv6;
+
 
 
 /* Functions */

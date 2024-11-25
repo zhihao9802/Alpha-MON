@@ -31,6 +31,40 @@ void table_init(hash_struct *data)
     }
 }
 
+// simple function to remove the all payload after TCP/UDP/ICMP header
+void l4_payload_remover(struct rte_ipv4_hdr *ipv4_header, struct rte_ipv6_hdr *ipv6_header, struct rte_mbuf *packet, int core, struct timespec tp, int id, out_interface_sett interface_setting, crypto_ip *self, int ip_origin)
+{
+    struct rte_tcp_hdr *tcp_header;
+    struct rte_udp_hdr *udp_header;
+    flow newPacket;
+    uint16_t src_port;
+    uint16_t dst_port;
+    int curr_hit;
+    int flag;
+    int detected_proto;
+    struct table_flow *flusso = NULL;
+
+    if (ipv4_header != NULL) // ipv4
+    {
+        switch (ipv4_header->next_proto_id)
+        {
+        case TCP:
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr) + sizeof(struct rte_ether_hdr) + sizeof(struct rte_tcp_hdr));
+            break;
+        case UDP:
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr) + sizeof(struct rte_ether_hdr) + sizeof(struct rte_udp_hdr));
+            break;
+        case ICMP:
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr) + sizeof(struct rte_ether_hdr) + sizeof(struct rte_icmp_hdr));
+            break;
+        default:
+            /* Since the protocol is not defined, it is assumed not secure, so is deleted the IP payload*/
+            remove_payload(packet, sizeof(struct rte_ipv4_hdr) + sizeof(struct rte_ether_hdr));
+            break;
+        }
+    }
+}
+
 // For Protocol use:
 // 0 = TCP
 // 1 = UDP
