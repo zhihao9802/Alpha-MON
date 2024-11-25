@@ -157,22 +157,20 @@ void process_packet_ip(struct rte_mbuf *packet, out_interface_sett interface_set
             printf("ANON:    to   %s\n", inet_ntoa(dst_addr));
         }
 
-        if (interface_setting.anon_ip_enabled == 1)
+        if (no_anon_ip_check(src_addr) || no_anon_ip_check(dst_addr))
         {
-            if (strcmp(interface_setting.anon_ip_key_mode, "static") == 0)
+            // only anonymize those in anon_net_list
+        }
+        else
+        {
+            if (interface_setting.anon_ip_enabled == 1)
             {
-                if (no_anon_ip_check(src_addr) || no_anon_ip_check(dst_addr))
-                {
-                    // only anonymize those in anon_net_list
-                }
-                else
+                if (strcmp(interface_setting.anon_ip_key_mode, "static") == 0)
                 {
                     if (anon_ip_check(src_addr))
                     {
                         src_addr.s_addr = retrieve_crypto_ip(&crypto_data[core][id], &src_addr, id, core);
                         ipv4_header->src_addr = src_addr.s_addr;
-                        // Replace ip anon tamporarily just for payload removing
-                        // l4_payload_remover(ipv4_header, NULL, packet, core, tp, id, interface_setting, &crypto_data[core][id], ip_origin);
                     }
                     else
                     {
@@ -182,25 +180,25 @@ void process_packet_ip(struct rte_mbuf *packet, out_interface_sett interface_set
                     {
                         dst_addr.s_addr = retrieve_crypto_ip(&crypto_data[core][id], &dst_addr, id, core);
                         ipv4_header->dst_addr = dst_addr.s_addr;
-                        // Replace ip anon tamporarily just for payload removing
-                        // l4_payload_remover(ipv4_header, NULL, packet, core, tp, id, interface_setting, &crypto_data[core][id], ip_origin);
                     }
                     else
                     {
                         ip_origin += 1;
                     }
-                }
 
-                if (VERBOSE > 0)
-                {
-                    printf("ANON:    new from %s\n", inet_ntoa(src_addr));
-                    printf("ANON:    new to   %s\n", inet_ntoa(dst_addr));
+                    if (VERBOSE > 0)
+                    {
+                        printf("ANON:    new from %s\n", inet_ntoa(src_addr));
+                        printf("ANON:    new to   %s\n", inet_ntoa(dst_addr));
+                    }
                 }
             }
+            if (interface_setting.payload_drop_enabled == 1)
+                l4_payload_remover(ipv4_header, NULL, packet, core, tp, id, interface_setting, &crypto_data[core][id], ip_origin);
+            /* Apply K-anon */
+            if (interface_setting.engine != 0)
+                multiplexer_proto(ipv4_header, NULL, packet, core, tp, id, interface_setting, &crypto_data[core][id], ip_origin);
         }
-        /* Apply K-anon */
-        if (interface_setting.engine != 0)
-            multiplexer_proto(ipv4_header, NULL, packet, core, tp, id, interface_setting, &crypto_data[core][id], ip_origin);
     }
     /* Is IPv6 */
     else if (ether_type == 0x86DD)
